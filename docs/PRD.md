@@ -34,7 +34,7 @@ Sky Scape targets the underserved niche of cinematic pilots, beginners, and casu
 
 Sky Scape aligns with the core vision of:
 - **Zero-Friction Access:** No registration, no downloads, and instant mid-air spawning directly in a browser tab.
-- **Infinite Discovery:** A deterministically randomized, procedural world containing six biomes that extends infinitely.
+- **Infinite Discovery:** A deterministically randomized, procedural world containing four biomes that extends infinitely.
 - **Serverless Scaling:** Zero backend operations or database dependencies, allowing scale-free hosting on static CDNs.
 
 ---
@@ -137,13 +137,11 @@ Sky Scape aligns with the core vision of:
 ### 11.3 Procedural Terrain and Biomes (FR-TERRAIN)
 - **FR-3.1:** Terrain heightmaps generated procedurally on the GPU using multi-octave Simplex Noise and FBM.
 - **FR-3.2:** Infinite chunk streaming: chunks (64x64 grid size) load ahead of the flight path and unload behind.
-- **FR-3.3: Six Procedural Biomes:**
-  - *Desert:* Sand dunes, yardangs, wind erosion textures.
-  - *Forest:* Grasslands, rolling hills, high-density instanced trees.
-  - *Valley:* Cliffs, riverbeds, steep rock faces.
-  - *Snowland:* Glaciers, snow peaks, tundra.
-  - *Coastlines:* Cliffs, islands, Gerstner wave ocean simulation with shore foam.
-  - *Badlands:* Multi-layered Danxia red rock formations.
+- **FR-3.3: Four Procedural Biomes:**
+-   *Desert:* Sand dunes, yardangs, wind erosion textures.
+-   *Forest:* Grasslands, rolling hills, high-density instanced trees.
+-   *Snowland:* Glaciers, snow peaks, tundra.
+-   *Coastlines:* Cliffs, islands, Gerstner wave ocean simulation with shore foam.
 
 ### 11.4 Adaptive Performance Degradation Engine (FR-PERFORMANCE)
 - **FR-4.1:** Continuous frame rate monitoring (FPS calculated every 1 second).
@@ -154,10 +152,10 @@ Sky Scape aligns with the core vision of:
 
 ### 11.5 User Interface and Settings (FR-UI)
 - **FR-5.1:** Clean, minimal HUD overlay featuring a speedometer (m/s), altitude indicator, current biome name, and FPS tracker.
-- **FR-5.2:** Floating edge sliders: Cruise Speed (adjust from 5 m/s to 30 m/s).
+- **FR-5.2:** Floating edge sliders: Cruise Speed (adjust from 5 m/s to 100 m/s).
 - **FR-5.3: Settings Panel:**
-  - Biome Selector (6 options).
-  - Input Calibration (Keyboard vs. Gamepad).
+-   Biome Selector (4 options).
+-   Input Calibration (Keyboard vs. Gamepad).
   - Sensitivity and Expo sliders.
   - Graphics Mode: Manual Quality (Low, Medium, High) vs. Auto-Adaptive.
 - **FR-5.4:** Persistence: Save settings locally using browser LocalStorage.
@@ -248,12 +246,12 @@ Sky Scape aligns with the core vision of:
 
 ### Phase 2: Mobile & Settings (Milestone 2)
 - Build touch screen UI dual joysticks and altitude slider.
-- Build Valley and Snowland biomes.
+- Build Snowland biome.
 - Add settings panel and LocalStorage settings persistence.
 - Implement Adaptive Performance Degradation Engine.
 
 ### Phase 3: Ocean, Gamepad, and PWA (Milestone 3)
-- Implement Coastline biome (ocean waves & foam) and Badlands biome.
+- Implement Coastline biome (ocean waves & foam).
 - Integrate Gamepad API and the FPV transmitter calibration wizard.
 - Add Service Worker support and PWA configuration for offline capabilities.
 

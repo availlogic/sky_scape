@@ -32,14 +32,12 @@ To provide a pure, seamless, and visually stunning FPV drone cruising experience
 - **All-Platform Inputs:**
   - *Desktop:* Standard keyboard (WASD + QE) and mouse (pitch/yaw) mapping.
   - *Mobile/Tablet:* Dual virtual joysticks (movement and camera rotation) and a dedicated altitude slider.
-  - *Dynamic Controls:* A persistent speed slider allowing real-time adjustment of cruising speed (e.g., 5 m/s to 30 m/s).
-- **Procedural Landscape Generation (Six Biomes):**
+  - *Dynamic Controls:* A persistent speed slider allowing real-time adjustment of cruising speed (e.g., 5 m/s to 100 m/s).
+- **Procedural Landscape Generation (Four Biomes):**
   - **Desert:** Dynamic sand dunes, wind erosion, and yardang formations.
   - **Forest:** Rolling hills, grasslands, and high-performance instanced foliage.
-  - **Valley:** Steep cliffs, canyons, and dry river beds.
   - **Snowland:** Majestic glaciers, snow-capped mountains, and sparse tundra.
   - **Coastlines & Archipelago:** Coastline cliffs, islands, and custom Gerstner wave sea water with simulated foam.
-  - **Badlands & Canyons:** Striated Danxia landforms, red rocks, and layered terrain colors.
 - **Atmospheric Weather & Lighting System:**
   - Real-time lighting incorporating directional sun light, ambient light, sky gradients, and atmospheric scattering.
   - Procedural time-of-day changes (sunset, golden hour, blue hour) and atmospheric conditions (clouds, fog, rain, snow).

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="description" content="Sky Scape — Infinite generative FPV drone flight simulator. Explore procedurally generated landscapes in your browser." />
+  <title>Sky Scape — Infinite FPV Drone Flight Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/styles/index.css" />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loading-content">
+      <h1 class="loading-title">Sky Scape</h1>
+      <p class="loading-subtitle">Preparing your flight…</p>
+      <div class="loading-bar-track">
+        <div id="loading-bar" class="loading-bar-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D Viewport Canvas -->
+  <canvas id="viewport-canvas"></canvas>
+
+  <!-- Flight HUD Overlay -->
+  <div id="flight-hud" class="flight-hud" style="display: none;">
+    <!-- Top Left: Telemetry -->
+    <div id="telemetry-panel" class="glass-panel telemetry-panel">
+      <div class="telemetry-row">
+        <span class="telemetry-label">SPEED</span>
+        <span id="hud-speed" class="telemetry-value">15.0 m/s</span>
+      </div>
+      <div class="telemetry-row">
+        <span class="telemetry-label">ALT</span>
+        <span id="hud-altitude" class="telemetry-value">150 m</span>
+      </div>
+    </div>
+
+    <!-- Top Center: Biome Badge -->
+    <div id="biome-badge" class="glass-panel biome-badge">
+      <span id="biome-icon">🌲</span>
+      <span id="biome-name">Forest</span>
+    </div>
+
+    <!-- Top Right: FPS + Settings -->
+    <div class="top-right-cluster">
+      <span id="fps-tracker" class="fps-tracker">60 FPS</span>
+      <button id="settings-gear-btn" class="glass-panel gear-btn" aria-label="Open Settings">
+        ⚙️
+      </button>
+    </div>
+
+    <!-- Right Edge: Cruise Speed Slider -->
+    <div id="cruise-speed-slider-container" class="cruise-slider-container">
+      <label class="cruise-label">CRUISE</label>
+      <input
+        type="range"
+        id="cruise-speed-slider"
+        class="cruise-slider"
+        min="5"
+        max="100"
+        value="15"
+        step="0.5"
+        orient="vertical"
+      />
+      <span id="cruise-speed-value" class="cruise-value">15 m/s</span>
+    </div>
+
+    <!-- Bottom Right: Performance Warning -->
+    <div id="perf-warning-alert" class="perf-warning" style="display: none;">
+      ⚠️ Optimizing performance…
+    </div>
+  </div>
+
+  <!-- Mobile Touch Controls (hidden by default, shown on touch devices) -->
+  <div id="touch-controls" style="display: none;">
+    <div id="left-joystick" class="joystick joystick-left">
+      <div class="joystick-track">
+        <div class="joystick-knob"></div>
+      </div>
+    </div>
+    <div id="right-joystick" class="joystick joystick-right">
+      <div class="joystick-track">
+        <div class="joystick-knob"></div>
+      </div>
+    </div>
+    <div id="height-slider" class="height-slider">
+      <div class="height-slider-track">
+        <div class="height-slider-knob"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal (hidden by default) -->
+  <div id="settings-modal" class="settings-overlay" style="display: none;">
+    <div class="settings-backdrop"></div>
+    <div class="glass-panel settings-card">
+      <div class="settings-header">
+        <h1>Settings</h1>
+        <button id="settings-close-btn" class="close-btn" aria-label="Close Settings">✕</button>
+      </div>
+
+      <div class="settings-body">
+        <!-- Biome Selector -->
+        <h2>Biome</h2>
+        <div id="biome-selector" class="biome-grid">
+          <button class="biome-card active" data-biome="forest">
+            <span class="biome-card-icon">🌲</span>
+            <span class="biome-card-label">Forest</span>
+            <span class="biome-card-check">✓</span>
+          </button>
+          <button class="biome-card" data-biome="desert">
+            <span class="biome-card-icon">🏜️</span>
+            <span class="biome-card-label">Desert</span>
+            <span class="biome-card-check">✓</span>
+          </button>
+          <button class="biome-card" data-biome="snowland">
+            <span class="biome-card-icon">❄️</span>
+            <span class="biome-card-label">Snowland</span>
+            <span class="biome-card-check">✓</span>
+          </button>
+          <button class="biome-card" data-biome="coastlines">
+            <span class="biome-card-icon">🏝️</span>
+            <span class="biome-card-label">Coastlines</span>
+            <span class="biome-card-check">✓</span>
+          </button>
+        </div>
+
+        <!-- Input Mode -->
+        <h2>Input Mode</h2>
+        <div class="input-mode-toggle">
+          <button class="mode-btn active" data-mode="keyboard">Keyboard & Mouse</button>
+          <button class="mode-btn" id="gamepad-mode-btn" data-mode="gamepad">Gamepad / FPV Controller</button>
+        </div>
+        <button id="btn-calibrate-gamepad" class="btn btn-secondary" style="margin-top: 10px; width: 100%; display: none;">Calibrate Controller</button>
+
+        <!-- Camera Damping -->
+        <h2>Camera Damping</h2>
+        <div class="slider-group">
+          <input type="range" id="damping-slider" min="0.01" max="1" step="0.01" value="0.15" />
+          <span id="damping-value" class="slider-readout">0.15</span>
+        </div>
+
+        <!-- Expo Curve -->
+        <h2>Expo Curve</h2>
+        <div class="slider-group">
+          <input type="range" id="expo-slider" min="0" max="1" step="0.01" value="0.4" />
+          <span id="expo-value" class="slider-readout">0.40</span>
+        </div>
+
+        <!-- Graphics Mode -->
+        <h2>Graphics</h2>
+        <div class="graphics-toggle">
+          <button class="mode-btn active" data-graphics="auto">Auto-Adaptive</button>
+          <button class="mode-btn" data-graphics="manual">Manual</button>
+        </div>
+        <div id="manual-quality" class="quality-segment" style="display: none;">
+          <button class="quality-btn" data-quality="low">Low</button>
+          <button class="quality-btn" data-quality="medium">Medium</button>
+          <button class="quality-btn active" data-quality="high">High</button>
+        </div>
+      </div>
+
+      <div class="settings-footer">
+        <button id="settings-reset-btn" class="btn btn-secondary">Restore Defaults</button>
+        <button id="settings-save-btn" class="btn btn-primary">Close & Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gamepad Calibration Wizard Modal (hidden by default) -->
+  <div id="calibration-modal" class="settings-overlay" style="display: none;">
+    <div class="settings-backdrop"></div>
+    <div class="glass-panel settings-card calibration-card">
+      <div class="settings-header">
+        <h1>Controller Calibration</h1>
+        <button id="calibration-close-btn" class="close-btn" aria-label="Close Calibration">✕</button>
+      </div>
+      <div class="settings-body">
+        <div id="calibration-step-welcome" class="cal-step">
+          <p>Connect your FPV transmitter or USB gamepad, then click Start to begin calibration.</p>
+          <button id="cal-start-btn" class="btn btn-primary" style="width: 100%;">Start Calibration</button>
+        </div>
+        
+        <div id="calibration-step-throttle" class="cal-step" style="display: none;">
+          <h2>Step 1: Throttle</h2>
+          <p>Move your throttle stick (usually left stick vertical) all the way UP, then click Next.</p>
+          <div class="calibration-indicator-bar" style="background: rgba(0,0,0,0.1); height: 20px; border-radius: 10px; overflow: hidden; margin: 15px 0;">
+            <div id="cal-throttle-bar" class="calibration-bar-fill" style="width: 0%; height: 100%; background: #3B82F6; transition: width 0.1s linear;"></div>
+          </div>
+          <button id="cal-throttle-next" class="btn btn-primary" style="width: 100%;">Next</button>
+        </div>
+
+        <div id="calibration-step-yaw" class="cal-step" style="display: none;">
+          <h2>Step 2: Yaw</h2>
+          <p>Move your yaw stick (usually left stick horizontal) all the way LEFT, then click Next.</p>
+          <div class="calibration-indicator-bar" style="background: rgba(0,0,0,0.1); height: 20px; border-radius: 10px; overflow: hidden; margin: 15px 0;">
+            <div id="cal-yaw-bar" class="calibration-bar-fill" style="width: 0%; height: 100%; background: #3B82F6; transition: width 0.1s linear;"></div>
+          </div>
+          <button id="cal-yaw-next" class="btn btn-primary" style="width: 100%;">Next</button>
+        </div>
+
+        <div id="calibration-step-pitch" class="cal-step" style="display: none;">
+          <h2>Step 3: Pitch</h2>
+          <p>Move your pitch stick (usually right stick vertical) all the way UP, then click Next.</p>
+          <div class="calibration-indicator-bar" style="background: rgba(0,0,0,0.1); height: 20px; border-radius: 10px; overflow: hidden; margin: 15px 0;">
+            <div id="cal-pitch-bar" class="calibration-bar-fill" style="width: 0%; height: 100%; background: #3B82F6; transition: width 0.1s linear;"></div>
+          </div>
+          <button id="cal-pitch-next" class="btn btn-primary" style="width: 100%;">Next</button>
+        </div>
+
+        <div id="calibration-step-roll" class="cal-step" style="display: none;">
+          <h2>Step 4: Roll</h2>
+          <p>Move your roll stick (usually right stick horizontal) all the way RIGHT, then click Next.</p>
+          <div class="calibration-indicator-bar" style="background: rgba(0,0,0,0.1); height: 20px; border-radius: 10px; overflow: hidden; margin: 15px 0;">
+            <div id="cal-roll-bar" class="calibration-bar-fill" style="width: 0%; height: 100%; background: #3B82F6; transition: width 0.1s linear;"></div>
+          </div>
+          <button id="cal-roll-next" class="btn btn-primary" style="width: 100%;">Next</button>
+        </div>
+
+        <div id="calibration-step-verification" class="cal-step" style="display: none;">
+          <h2>Step 5: Verification</h2>
+          <p>Verify stick movements. The dot should follow your sticks correctly.</p>
+          <div class="calibration-verification-area" style="display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 15px;">
+            <div class="calibration-grid-box" style="position: relative; width: 180px; height: 180px; background: rgba(0,0,0,0.05); border: 2px dashed rgba(0,0,0,0.2); border-radius: 8px;">
+              <!-- crosshair lines -->
+              <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(0,0,0,0.1);"></div>
+              <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(0,0,0,0.1);"></div>
+              <div id="cal-verification-dot" class="calibration-gimbal-dot" style="position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; background: #3B82F6; border-radius: 50%; transform: translate(-50%, -50%); transition: left 0.05s linear, top 0.05s linear;"></div>
+            </div>
+            <div class="calibration-inversion-options" style="display: flex; flex-direction: column; gap: 8px; align-self: stretch;">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #1E293B;"><input type="checkbox" id="inv-throttle" /> Invert Throttle</label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #1E293B;"><input type="checkbox" id="inv-yaw" /> Invert Yaw</label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #1E293B;"><input type="checkbox" id="inv-pitch" /> Invert Pitch</label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #1E293B;"><input type="checkbox" id="inv-roll" /> Invert Roll</label>
+            </div>
+          </div>
+          <button id="cal-save-btn" class="btn btn-primary" style="width: 100%; margin-top: 15px;">Save Calibration</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gamepad Disconnection Modal (hidden) -->
+  <div id="controller-disconnected-modal" class="settings-overlay" style="display: none;">
+    <div class="settings-backdrop"></div>
+    <div class="glass-panel settings-card disconnect-card">
+      <h1>Controller Disconnected</h1>
+      <p>Reconnect controller or press <kbd>Escape</kbd> to switch to Keyboard mode.</p>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

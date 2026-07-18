@@ -158,11 +158,11 @@ Sky Scape has a unique opportunity to capture the **casual and cinematic** FPV m
 
 ### Phase 2: Mobile & Extended Environments (Milestone 2)
 - Implement mobile dual-virtual joysticks and altitude sliders.
-- Add the **Valley** and **Snowland** biomes.
+- Add the **Snowland** biome.
 - Implement the *Adaptive Degradation Engine* to track FPS and adjust chunk streaming limits dynamically.
 
 ### Phase 3: Ocean Shaders & Offline Support (Milestone 3)
-- Develop the **Coastlines & Archipelago** biome (including Gerstner waves) and **Badlands & Canyons** biome.
+- Develop the **Coastlines & Archipelago** biome (including Gerstner waves).
 - Implement PWA Service Worker caching for offline play.
 - Build the Gamepad API transmitter configuration menu.
 

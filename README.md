@@ -39,7 +39,7 @@ The application features a decoupled, modular client-side architecture:
 
 - **Engine:** Coordinates the render loops, screen sizing, and graphics contexts (WebGPU / WebGL 2.0 fallback).
 - **Terrain:** Manages dynamic chunk streaming, grid meshing, and GPU-driven height calculation.
-- **Biomes:** Governs ecosystem configurations (Desert, Forest, Valley, Snowland, Coastlines, Badlands) and shader properties.
+- **Biomes:** Governs ecosystem configurations (Desert, Forest, Snowland, Coastlines) and shader properties.
 - **Controls:** Handles PC keyboard/mouse event mapping and Mobile dual virtual joysticks/sliders.
 - **Physics:** Simulates FPV momentum-based flight dynamics and camera damping.
 - **UI:** Overlays user controls, biome selector, speed slider, and performance metrics.
@@ -116,13 +116,23 @@ Since the application compiles to static assets, it can be hosted for free on Cl
 ### Controls Map
 
 - **Desktop (PC/Mac):**
-  - `W` / `S`: Fly forward / backward
-  - `A` / `D`: Strafe left / right
-  - `Q` / `E`: Elevate upward / downward
-  - *Mouse Move*: Pitch / Yaw camera angles
-  - *Cruise Speed Slider*: Adjust maximum velocity
+  - `W` / `S`: Move forward / backward (relative to camera heading)
+  - `A` / `D`: Strafe left / right (relative to camera heading)
+  - `Q` / `E`: Move vertically up / down (absolute Y axis)
+  - *Mouse Move*: Rotate camera view direction (yaw and pitch)
+  - *Escape*: Pause physics / Toggle Settings modal
+- **Gamepad / FPV Controller:**
+  - Connect via USB or Bluetooth.
+  - Supports standard gamepads and FPV transmitters (FrSky, BetaFPV, DJI).
+  - Features an interactive **5-Step Calibration Wizard** in the Settings panel to map custom stick axes (Throttle, Yaw, Pitch, Roll) and configure stick inversion.
 - **Mobile (Phone/Tablet):**
-  - *Left Virtual Joystick*: Forward, backward, and strafe movements
-  - *Right Virtual Joystick*: Pitch and Yaw camera rotation
-  - *Right Slide Bar*: Control elevation speed
-  - *Cruise Speed Slider*: Adjust flight speed limits
+  - *Left Virtual Joystick*: Throttle and Yaw control
+  - *Right Virtual Joystick*: Pitch and Roll control
+  - *Idle Timeout*: Virtual joysticks fade to 20% opacity after 2.5 seconds of inactivity to maximize visual field.
+- **PWA & Offline Mode:**
+  - Installs as a standalone application on mobile and desktop.
+  - Utilizes a **Stale-While-Revalidate Service Worker** caching strategy to allow 100% offline flight.
+- **Adaptive Performance (APDE):**
+  - Dynamic 4-level quality adjustments based on live 1-second rolling FPS averages.
+  - Automatically degrades/upgrades render scaling, chunk visibility, shadow mapping, and Gerstner wave complexity to guarantee 60 FPS.
+

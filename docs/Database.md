@@ -20,7 +20,7 @@ All user settings, calibrations, and preferences are stored as JSON strings in t
   "properties": {
     "biomeName": {
       "type": "string",
-      "enum": ["desert", "forest", "valley", "snowland", "coastlines", "badlands"],
+      "enum": ["desert", "forest", "snowland", "coastlines"],
       "default": "forest"
     },
     "graphicsQuality": {

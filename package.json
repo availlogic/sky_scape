@@ -1,0 +1,32 @@
+{
+  "name": "sky-scape",
+  "version": "1.0.0",
+  "description": "Infinite generative FPV drone flight simulator — pure frontend, WebGPU/WebGL 2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "lint": "eslint src/ tests/ --ext .ts",
+    "format": "prettier --check 'src/**/*.ts' 'tests/**/*.ts'",
+    "format:fix": "prettier --write 'src/**/*.ts' 'tests/**/*.ts'"
+  },
+  "dependencies": {
+    "three": "^0.172.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@types/three": "^0.172.0",
+    "@typescript-eslint/eslint-plugin": "^8.33.1",
+    "@typescript-eslint/parser": "^8.33.1",
+    "eslint": "^9.28.0",
+    "jsdom": "^27.0.1",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.1"
+  }
+}

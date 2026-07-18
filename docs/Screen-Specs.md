@@ -22,7 +22,7 @@ This document provides detailed specifications for each screen overlay in the Sk
     *   **Settings Button:** Round, frosted glass gear button. Clicking opens the **Settings Panel**.
 *   **Cruise Speed Slider (Right Edge - Floating):**
     *   Vertical floating slider track.
-    *   **Range:** `5 m/s` to `30 m/s` (default `15 m/s`).
+    *   **Range:** `5 m/s` to `100 m/s` (default `15 m/s`).
     *   **Interaction:** Drag-to-adjust. Instantly updates the drone's forward velocity.
 *   **Performance Optimization Indicator (Bottom Right):**
     *   Floating status text reading: `⚠️ Optimizing performance...`.
@@ -79,7 +79,7 @@ This document provides detailed specifications for each screen overlay in the Sk
 ### Form Components
 
 #### 1. Biome Selector (Grid Layout)
-*   **Options:** 6 options (Desert, Forest, Valley, Snowland, Coastlines, Badlands).
+*   **Options:** 4 options (Desert, Forest, Snowland, Coastlines).
 *   **Component Visuals:** High-contrast thumbnail cards. Hovering scales up slightly. Active biome has a thick blue border (`#3B82F6`) and checkmark.
 
 #### 2. Input Mode Toggle

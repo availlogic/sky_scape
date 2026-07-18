@@ -60,3 +60,9 @@ __pycache__/
 
 # AI Agent
 .agents/
+
+# Playwright test results
+test-results/
+playwright-report/
+blob-report/
+

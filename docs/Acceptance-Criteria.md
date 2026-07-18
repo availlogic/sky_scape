@@ -74,7 +74,7 @@ This document defines the deterministic acceptance conditions and Definition of 
 
 ### Acceptance Conditions
 *   **Procedural Heightmaps:** Terrain must be generated procedurally on the GPU using multi-octave Simplex noise with FBM.
-*   **Six Biomes:** The engine must support six distinct biomes (Desert, Forest, Valley, Snowland, Coastlines, Badlands) with matching color palettes and instanced foliage templates.
+*   **Four Biomes:** The engine must support four distinct biomes (Desert, Forest, Snowland, Coastlines) with matching color palettes and instanced foliage templates.
 *   **Infinite Chunk Streaming:** Terrain must stream in 64x64 grids. New chunks load ahead of the flight path; chunks outside the active render radius are disposed of.
 *   **Foliage Placement:** Foliage instances must match the biome layout and render directly on the terrain surface (no floating trees, no buried instances).
 
