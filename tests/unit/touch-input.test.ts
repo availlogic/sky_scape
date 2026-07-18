@@ -36,17 +36,19 @@ describe('Touch Joystick Controls Module', () => {
     touchInput.destroy();
   });
 
-  test('initial values are neutral', () => {
+  test('initial values are neutral and isTouch is true', () => {
     const inputs = touchInput.poll();
     expect(inputs.yaw).toBe(0.0);
     expect(inputs.pitch).toBe(0.0);
-    expect(inputs.roll).toBe(0.0);
-    expect(inputs.throttle).toBe(0.5); // hover defaults
+    expect(inputs.forward).toBe(0.0);
+    expect(inputs.sideway).toBe(0.0);
+    expect(inputs.vertical).toBe(0.0);
+    expect(inputs.isTouch).toBe(true);
   });
 
-  test('left joystick touch changes pitch and roll', () => {
+  test('left joystick controls forward/sideway translation', () => {
     // Left center is at x=120, y=570.
-    // Simulate touchstart at x=180 (full deflection right -> roll=1.0), y=570
+    // Simulate touchstart at x=180 (full deflection right -> sideway=1.0), y=570
     const startEvent = new TouchEvent('touchstart', {
       changedTouches: [
         {
@@ -60,10 +62,10 @@ describe('Touch Joystick Controls Module', () => {
     document.dispatchEvent(startEvent);
 
     let inputs = touchInput.poll();
-    expect(inputs.roll).toBeCloseTo(1.0);
-    expect(inputs.pitch).toBe(0.0);
+    expect(inputs.sideway).toBeCloseTo(1.0);
+    expect(inputs.forward).toBeCloseTo(0.0);
 
-    // Drag touch upwards to y=510 (full deflection up -> pitch=-1.0)
+    // Drag touch upwards to y=510 (full deflection up -> forward=1.0)
     const moveEvent = new TouchEvent('touchmove', {
       touches: [
         {
@@ -77,8 +79,8 @@ describe('Touch Joystick Controls Module', () => {
     document.dispatchEvent(moveEvent);
 
     inputs = touchInput.poll();
-    expect(inputs.roll).toBeCloseTo(0.0);
-    expect(inputs.pitch).toBeCloseTo(-1.0);
+    expect(inputs.sideway).toBeCloseTo(0.0);
+    expect(inputs.forward).toBeCloseTo(1.0);
 
     // Release touch
     const endEvent = new TouchEvent('touchend', {
@@ -94,13 +96,67 @@ describe('Touch Joystick Controls Module', () => {
     document.dispatchEvent(endEvent);
 
     inputs = touchInput.poll();
-    expect(inputs.roll).toBe(0.0);
+    expect(inputs.sideway).toBe(0.0);
+    expect(inputs.forward).toBe(0.0);
+  });
+
+  test('right joystick controls yaw and pitch rotation', () => {
+    // Right center is at x=870, y=570.
+    // Simulate touchstart at x=930 (full deflection right -> yaw=1.0), y=570
+    const startEvent = new TouchEvent('touchstart', {
+      changedTouches: [
+        {
+          identifier: 3,
+          target: document.getElementById('right-joystick')!,
+          clientX: 930,
+          clientY: 570,
+        } as any,
+      ],
+    });
+    document.dispatchEvent(startEvent);
+
+    let inputs = touchInput.poll();
+    expect(inputs.yaw).toBeCloseTo(1.0);
+    expect(inputs.pitch).toBeCloseTo(0.0);
+
+    // Drag touch downwards to y=630 (full deflection down -> pitch=1.0)
+    const moveEvent = new TouchEvent('touchmove', {
+      touches: [
+        {
+          identifier: 3,
+          target: document.getElementById('right-joystick')!,
+          clientX: 870,
+          clientY: 630,
+        } as any,
+      ],
+    });
+    document.dispatchEvent(moveEvent);
+
+    inputs = touchInput.poll();
+    expect(inputs.yaw).toBeCloseTo(0.0);
+    expect(inputs.pitch).toBeCloseTo(1.0);
+
+    // Release touch
+    const endEvent = new TouchEvent('touchend', {
+      changedTouches: [
+        {
+          identifier: 3,
+          target: document.getElementById('right-joystick')!,
+          clientX: 870,
+          clientY: 630,
+        } as any,
+      ],
+    });
+    document.dispatchEvent(endEvent);
+
+    inputs = touchInput.poll();
+    expect(inputs.yaw).toBe(0.0);
     expect(inputs.pitch).toBe(0.0);
   });
 
-  test('height slider touch changes throttle', () => {
+  test('height slider controls vertical movement (up=1.0, center=0.0, down=-1.0)', () => {
     // Height slider center Y is 500. Height range is [400, 600].
-    // Touch at top (y=400) -> full throttle (1.0)
+    // Touch at top (y=400) -> vertical=1.0 (ascend)
     const startEvent = new TouchEvent('touchstart', {
       changedTouches: [
         {
@@ -114,10 +170,26 @@ describe('Touch Joystick Controls Module', () => {
     document.dispatchEvent(startEvent);
 
     let inputs = touchInput.poll();
-    expect(inputs.throttle).toBe(1.0);
+    expect(inputs.vertical).toBe(1.0);
 
-    // Touch at bottom (y=600) -> zero throttle (0.0)
-    const moveEvent = new TouchEvent('touchmove', {
+    // Touch at center (y=500) -> vertical=0.0
+    const moveCenterEvent = new TouchEvent('touchmove', {
+      touches: [
+        {
+          identifier: 2,
+          target: document.getElementById('height-slider')!,
+          clientX: 974,
+          clientY: 500,
+        } as any,
+      ],
+    });
+    document.dispatchEvent(moveCenterEvent);
+
+    inputs = touchInput.poll();
+    expect(inputs.vertical).toBeCloseTo(0.0);
+
+    // Touch at bottom (y=600) -> vertical=-1.0 (descend)
+    const moveBottomEvent = new TouchEvent('touchmove', {
       touches: [
         {
           identifier: 2,
@@ -127,9 +199,25 @@ describe('Touch Joystick Controls Module', () => {
         } as any,
       ],
     });
-    document.dispatchEvent(moveEvent);
+    document.dispatchEvent(moveBottomEvent);
 
     inputs = touchInput.poll();
-    expect(inputs.throttle).toBe(0.0);
+    expect(inputs.vertical).toBe(-1.0);
+
+    // Release touch -> vertical resets to 0
+    const endEvent = new TouchEvent('touchend', {
+      changedTouches: [
+        {
+          identifier: 2,
+          target: document.getElementById('height-slider')!,
+          clientX: 974,
+          clientY: 600,
+        } as any,
+      ],
+    });
+    document.dispatchEvent(endEvent);
+
+    inputs = touchInput.poll();
+    expect(inputs.vertical).toBe(0.0);
   });
 });

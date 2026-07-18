@@ -297,4 +297,135 @@ describe('FPV Physics Engine', () => {
 
     expect(engine.speed).toBeCloseTo(100.0, 2);
   });
+
+  // --- Touch Spectator Mode Tests ---
+
+  test('touch input uses spectator physics (no gravity)', () => {
+    const engine = new FPVPhysicsEngine(DEFAULT_PHYSICS_CONFIG, flatTerrain);
+    engine.spawn(150);
+
+    // Apply touch input with forward movement only
+    for (let i = 0; i < 10; i++) {
+      engine.update(0.1, {
+        yaw: 0,
+        pitch: 0,
+        roll: 0,
+        throttle: 0,
+        forward: 1.0,
+        sideway: 0,
+        vertical: 0,
+        isTouch: true,
+      });
+    }
+
+    // With no gravity, drone should NOT have fallen — y velocity should be ~0
+    // (only forward movement along -Z, no downward pull)
+    expect(engine.velocity.y).toBeCloseTo(0, 1);
+    // Should have moved forward
+    expect(engine.velocity.z).toBeLessThan(0);
+  });
+
+  test('touch translation speed is capped at half of cruiseSpeed', () => {
+    const config = { ...DEFAULT_PHYSICS_CONFIG, cruiseSpeed: 30.0 };
+    const engine = new FPVPhysicsEngine(config, flatTerrain);
+    engine.spawn(150);
+
+    // Accelerate forward at full deflection for many frames
+    for (let i = 0; i < 100; i++) {
+      engine.update(0.1, {
+        yaw: 0,
+        pitch: 0,
+        roll: 0,
+        throttle: 0,
+        forward: 1.0,
+        sideway: 0,
+        vertical: 0,
+        isTouch: true,
+      });
+    }
+
+    // Touch speed should cap at cruiseSpeed * 0.5 = 15
+    expect(engine.speed).toBeCloseTo(15.0, 0);
+    expect(engine.speed).toBeLessThanOrEqual(15.01);
+  });
+
+  test('touch rotation sensitivity is halved compared to desktop', () => {
+    // Desktop test: sensitivity = 0.024
+    const engineDesktop = new FPVPhysicsEngine(DEFAULT_PHYSICS_CONFIG, flatTerrain);
+    engineDesktop.spawn(150);
+
+    engineDesktop.update(0.1, {
+      yaw: 10.0,
+      pitch: 0,
+      roll: 0,
+      throttle: 0,
+      forward: 0,
+      sideway: 0,
+      vertical: 0,
+      isKeyboardMouse: true,
+    });
+
+    const desktopEuler = new THREE.Euler().setFromQuaternion(engineDesktop.rotation, 'YXZ');
+    const desktopYawDelta = Math.abs(desktopEuler.y);
+
+    // Touch test: sensitivity should be 0.012 (half of desktop 0.024)
+    const engineTouch = new FPVPhysicsEngine(DEFAULT_PHYSICS_CONFIG, flatTerrain);
+    engineTouch.spawn(150);
+
+    engineTouch.update(0.1, {
+      yaw: 10.0,
+      pitch: 0,
+      roll: 0,
+      throttle: 0,
+      forward: 0,
+      sideway: 0,
+      vertical: 0,
+      isTouch: true,
+    });
+
+    const touchEuler = new THREE.Euler().setFromQuaternion(engineTouch.rotation, 'YXZ');
+    const touchYawDelta = Math.abs(touchEuler.y);
+
+    // Touch yaw delta should be half of desktop yaw delta
+    expect(touchYawDelta).toBeCloseTo(desktopYawDelta / 2, 5);
+  });
+
+  test('touch velocity decays when inputs are released', () => {
+    const engine = new FPVPhysicsEngine(DEFAULT_PHYSICS_CONFIG, flatTerrain);
+    engine.spawn(150);
+
+    // Accelerate forward
+    for (let i = 0; i < 10; i++) {
+      engine.update(0.1, {
+        yaw: 0,
+        pitch: 0,
+        roll: 0,
+        throttle: 0,
+        forward: 1.0,
+        sideway: 0,
+        vertical: 0,
+        isTouch: true,
+      });
+    }
+
+    const speedBeforeRelease = engine.speed;
+    expect(speedBeforeRelease).toBeGreaterThan(0);
+
+    // Release all inputs — velocity should decay via drag
+    for (let i = 0; i < 10; i++) {
+      engine.update(0.1, {
+        yaw: 0,
+        pitch: 0,
+        roll: 0,
+        throttle: 0,
+        forward: 0,
+        sideway: 0,
+        vertical: 0,
+        isTouch: true,
+      });
+    }
+
+    expect(engine.speed).toBeLessThan(speedBeforeRelease);
+    expect(engine.speed).toBeGreaterThanOrEqual(0);
+  });
 });

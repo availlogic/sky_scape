@@ -4,9 +4,9 @@ import { clamp } from '../utils/math';
 export class TouchJoystickInput implements IInputSource {
   private yaw = 0.0;
   private pitch = 0.0;
-  private roll = 0.0;
-  private throttleVal = 0.5; // Starts at hover throttle
-  private isAltSliderTouched = false;
+  private forwardVal = 0.0;
+  private sidewayVal = 0.0;
+  private verticalVal = 0.0;
 
   private leftContainer: HTMLElement | null = null;
   private leftKnob: HTMLElement | null = null;
@@ -69,24 +69,15 @@ export class TouchJoystickInput implements IInputSource {
   }
 
   public poll(): DroneInputs {
-    // Map joysticks values to FPV controls:
-    // Left joystick: Up/Down = pitch (forward/back), Left/Right = roll (strafe)
-    // Right joystick: Up/Down = camera pitch (handled separately), Left/Right = yaw
-    // Altitude slider: slides relative to center -> throttle changes
-
-    // Continuous throttle adjustment while holding altitude slider
-    if (this.isAltSliderTouched) {
-      // Scale lift rate (throttleVal accumulates changes)
-      // Up = throttle increases, Down = throttle decreases
-      // Wait, we poll inputs to determine absolute throttle.
-      // If user holds slider up, we increase throttle. If released, it centers back to neutral.
-    }
-
     return {
       yaw: this.yaw,
       pitch: this.pitch,
-      roll: this.roll,
-      throttle: this.throttleVal,
+      roll: 0,
+      throttle: 0,
+      forward: this.forwardVal,
+      sideway: this.sidewayVal,
+      vertical: this.verticalVal,
+      isTouch: true,
     };
   }
 
@@ -176,7 +167,6 @@ export class TouchJoystickInput implements IInputSource {
         const rect = this.altContainer.getBoundingClientRect();
         if (tx >= rect.left - 20 && tx <= rect.right + 20 && ty >= rect.top && ty <= rect.bottom) {
           this.altTouchId = touch.identifier;
-          this.isAltSliderTouched = true;
           this.updateAltSlider(ty);
           e.preventDefault();
         }
@@ -208,20 +198,21 @@ export class TouchJoystickInput implements IInputSource {
 
       if (touch.identifier === this.leftTouchId) {
         this.leftTouchId = null;
-        this.pitch = 0.0;
-        this.roll = 0.0;
+        this.forwardVal = 0.0;
+        this.sidewayVal = 0.0;
         if (this.leftKnob) {
           this.leftKnob.style.transform = 'translate(-50%, -50%)';
         }
       } else if (touch.identifier === this.rightTouchId) {
         this.rightTouchId = null;
         this.yaw = 0.0;
+        this.pitch = 0.0;
         if (this.rightKnob) {
           this.rightKnob.style.transform = 'translate(-50%, -50%)';
         }
       } else if (touch.identifier === this.altTouchId) {
         this.altTouchId = null;
-        this.isAltSliderTouched = false;
+        this.verticalVal = 0.0;
         if (this.altKnob) {
           this.altKnob.style.top = '50%';
         }
@@ -243,9 +234,9 @@ export class TouchJoystickInput implements IInputSource {
       this.leftKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
     }
 
-    // Left joystick maps to: dy -> pitch (forward is negative), dx -> roll (right is positive)
-    this.roll = dx / this.maxRadius;
-    this.pitch = dy / this.maxRadius;
+    // Left joystick: dx -> sideway (right=positive), -dy -> forward (up=positive)
+    this.sidewayVal = dx / this.maxRadius;
+    this.forwardVal = -dy / this.maxRadius;
   }
 
   private updateRightJoystick(tx: number, ty: number): void {
@@ -262,8 +253,9 @@ export class TouchJoystickInput implements IInputSource {
       this.rightKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
     }
 
-    // Right joystick maps to: dx -> yaw (right is positive)
+    // Right joystick: dx -> yaw (right=positive), dy -> pitch (down=positive)
     this.yaw = dx / this.maxRadius;
+    this.pitch = dy / this.maxRadius;
   }
 
   private updateAltSlider(ty: number): void {
@@ -276,9 +268,9 @@ export class TouchJoystickInput implements IInputSource {
       this.altKnob.style.top = `${percentage}%`;
     }
 
-    // Up = throttle increase, Down = throttle decrease
-    // Map dy: -altHalfHeight (top) -> 1.0, altHalfHeight (bottom) -> 0.0
-    this.throttleVal = 1.0 - (dy + this.altHalfHeight) / (this.altHalfHeight * 2);
+    // Up = positive vertical (ascend), Down = negative vertical (descend)
+    // dy: -altHalfHeight (top) -> +1.0, +altHalfHeight (bottom) -> -1.0
+    this.verticalVal = -dy / this.altHalfHeight;
   }
 }
 export default TouchJoystickInput;

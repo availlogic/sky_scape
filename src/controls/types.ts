@@ -11,6 +11,7 @@ export interface DroneInputs {
   sideway?: number;
   vertical?: number;
   isKeyboardMouse?: boolean;
+  isTouch?: boolean;
 }
 
 /**

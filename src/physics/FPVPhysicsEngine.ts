@@ -65,15 +65,16 @@ export class FPVPhysicsEngine implements IDronePhysics {
       }
     }
 
-    if (inputs.isKeyboardMouse) {
+    if (inputs.isKeyboardMouse || inputs.isTouch) {
       // --- Spectator Fly-Camera Control Logic ---
 
-      // Update orientation (yaw & pitch) via mouse deltas
+      // Update orientation (yaw & pitch) via mouse deltas or touch joystick
       const euler = new THREE.Euler().setFromQuaternion(this.rotation, 'YXZ');
       let yawAngle = euler.y;
       let pitchAngle = euler.x;
 
-      const sensitivity = 0.024;
+      // Touch sensitivity is halved compared to desktop
+      const sensitivity = inputs.isTouch ? 0.012 : 0.024;
       yawAngle -= inputs.yaw * sensitivity;
       pitchAngle -= inputs.pitch * sensitivity;
 
@@ -84,7 +85,7 @@ export class FPVPhysicsEngine implements IDronePhysics {
       this.rotation.setFromEuler(new THREE.Euler(pitchAngle, yawAngle, 0, 'YXZ'));
       this.angularVelocity.set(0, 0, 0);
 
-      // Update position via keyboard keys W/S/A/D/Q/E
+      // Update position via keyboard keys W/S/A/D/Q/E or touch joystick
       const forwardDir = new THREE.Vector3(0, 0, -1).applyQuaternion(this.rotation);
       const rightDir = new THREE.Vector3(1, 0, 0).applyQuaternion(this.rotation);
       const verticalDir = new THREE.Vector3(0, 1, 0);
@@ -94,9 +95,12 @@ export class FPVPhysicsEngine implements IDronePhysics {
       if (inputs.sideway) moveDirection.addScaledVector(rightDir, inputs.sideway);
       if (inputs.vertical) moveDirection.addScaledVector(verticalDir, inputs.vertical);
 
-      const maxSpeed = this.config.cruiseSpeed ?? 30.0;
+      // Touch speed is halved compared to desktop
+      const baseCruise = this.config.cruiseSpeed ?? 30.0;
+      const maxSpeed = inputs.isTouch ? baseCruise * 0.5 : baseCruise;
       const accel = maxSpeed * 10.0;
       const drag = 5.0;
+
 
       if (moveDirection.lengthSq() > 0) {
         moveDirection.normalize();
