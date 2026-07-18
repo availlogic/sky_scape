@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { IBiomeConfig } from '../biomes/types';
 
 export class SceneManager {
   public scene: THREE.Scene;
@@ -74,6 +75,28 @@ export class SceneManager {
 
     this.scene.add(this.sunLight);
     this.scene.add(this.sunLight.target);
+  }
+
+  public applyBiomeEnvironment(biome: IBiomeConfig): void {
+    const skyColorStr = biome.skyColor ?? '#cbd5e1';
+    this.scene.background = new THREE.Color(skyColorStr);
+
+    const ambientHex = biome.ambientColor ?? '#94a3b8';
+    const ambientIntensity = biome.ambientIntensity ?? 0.4;
+
+    const sunHex = biome.sunColor ?? '#ffffff';
+    const sunIntensity = biome.sunIntensity ?? 0.8;
+
+    this.scene.traverse((child) => {
+      if (child instanceof THREE.AmbientLight) {
+        child.color.set(ambientHex);
+        child.intensity = ambientIntensity;
+      }
+      if (child instanceof THREE.DirectionalLight) {
+        child.color.set(sunHex);
+        child.intensity = sunIntensity;
+      }
+    });
   }
 }
 export default SceneManager;

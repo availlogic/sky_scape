@@ -21,6 +21,7 @@ uniform float u_isCoastlines;
 // Lighting uniforms
 uniform vec3 u_lightDirection;
 uniform vec3 u_ambientColor;
+uniform vec3 u_fogColor;
 
 // Water level uniform
 uniform float u_waterLevel;
@@ -70,7 +71,7 @@ void main() {
   float fogDistance = length(v_worldPosition);
   float fogFactor = 1.0 - exp(-fogDistance * 0.0008);
   fogFactor = clamp(fogFactor, 0.0, 1.0);
-  vec3 fogColor = vec3(0.75, 0.82, 0.92); // sky-blue haze
+  vec3 fogColor = u_fogColor; // sky-blue haze
 
   vec3 finalColor = mix(litColor, fogColor, fogFactor);
 

@@ -181,4 +181,34 @@ describe('TerrainChunk culling', () => {
       expect(noiseVal).toBeGreaterThan(-0.1);
     }
   });
+
+  test('shrub foliage is correctly generated for forest biome', async () => {
+    const scene = new THREE.Scene();
+    const renderer = {} as THREE.WebGLRenderer;
+    const chunk = new TerrainChunk(0, 0, scene, FOREST_BIOME);
+    await chunk.initialize(renderer);
+
+    const shrubInst = chunk.foliageInstances.find(
+      (inst) => inst.geometry.name === 'shrub',
+    );
+    expect(shrubInst).toBeDefined();
+    expect(shrubInst!.count).toBeGreaterThan(0);
+    expect(shrubInst!.geometry.getAttribute('position')).toBeDefined();
+    expect(shrubInst!.geometry.getAttribute('color')).toBeDefined();
+  });
+
+  test('passes u_fogColor uniform correctly to terrain and water materials', async () => {
+    const scene = new THREE.Scene();
+    const renderer = {} as THREE.WebGLRenderer;
+    const chunk = new TerrainChunk(0, 0, scene, FOREST_BIOME);
+    await chunk.initialize(renderer);
+
+    const terrainMat = chunk.mesh!.material as THREE.RawShaderMaterial;
+    expect(terrainMat.uniforms.u_fogColor).toBeDefined();
+    expect(terrainMat.uniforms.u_fogColor.value).toBeInstanceOf(THREE.Color);
+
+    const waterMat = chunk.waterMesh!.material as THREE.RawShaderMaterial;
+    expect(waterMat.uniforms.u_fogColor).toBeDefined();
+    expect(waterMat.uniforms.u_fogColor.value).toBeInstanceOf(THREE.Color);
+  });
 });

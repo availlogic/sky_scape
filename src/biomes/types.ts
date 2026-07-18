@@ -13,7 +13,7 @@ export interface NoiseConfig {
  * Foliage instance specification.
  */
 export interface FoliageSpec {
-  type: 'tree' | 'rock' | 'grass' | 'flower';
+  type: 'tree' | 'rock' | 'grass' | 'flower' | 'shrub';
   density: number;
   scaleMin: number;
   scaleMax: number;
@@ -31,4 +31,9 @@ export interface IBiomeConfig {
   maxElevation: number;
   foliage: FoliageSpec[];
   waterLevel?: number;
+  skyColor?: string;
+  ambientColor?: string;
+  ambientIntensity?: number;
+  sunColor?: string;
+  sunIntensity?: number;
 }

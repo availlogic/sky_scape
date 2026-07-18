@@ -67,7 +67,8 @@ export class TerrainChunk implements ITerrainChunk {
           u_waterColor: { value: new THREE.Color(this.biome.waterColor) },
 
           u_lightDirection: { value: new THREE.Vector3(1.0, 1.5, 0.5).normalize() },
-          u_ambientColor: { value: new THREE.Color('#94A3B8') },
+          u_ambientColor: { value: new THREE.Color(this.biome.ambientColor ?? '#94A3B8') },
+          u_fogColor: { value: new THREE.Color(this.biome.skyColor ?? '#cbd5e1') },
         },
         shadowSide: THREE.DoubleSide,
       });
@@ -92,7 +93,8 @@ export class TerrainChunk implements ITerrainChunk {
           u_waveCount: { value: 4 },
           u_waterColor: { value: new THREE.Color(this.biome.waterColor) },
           u_lightDirection: { value: new THREE.Vector3(1.0, 1.5, 0.5).normalize() },
-          u_ambientColor: { value: new THREE.Color('#94A3B8') },
+          u_ambientColor: { value: new THREE.Color(this.biome.ambientColor ?? '#94A3B8') },
+          u_fogColor: { value: new THREE.Color(this.biome.skyColor ?? '#cbd5e1') },
         },
         transparent: true,
         side: THREE.DoubleSide,
@@ -189,6 +191,9 @@ export class TerrainChunk implements ITerrainChunk {
       } else if (spec.type === 'flower') {
         geo = getCachedGeometry('flower', createFlowerGeometry);
         mat = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
+      } else if (spec.type === 'shrub') {
+        geo = getCachedGeometry('shrub', createShrubGeometry);
+        mat = new THREE.MeshLambertMaterial({ vertexColors: true });
       } else {
         // Grass
         geo = new THREE.PlaneGeometry(0.8, 1.2);
@@ -537,4 +542,79 @@ function createFlowerGeometry(): THREE.BufferGeometry {
 
   return mergedGeo;
 }
+
+function createShrubGeometry(): THREE.BufferGeometry {
+  const base = new THREE.CylinderGeometry(0.05, 0.1, 0.4, 4);
+  base.translate(0, 0.2, 0);
+  const baseGeo = base.toNonIndexed();
+  base.dispose();
+
+  const foliage1 = new THREE.DodecahedronGeometry(0.6, 1);
+  foliage1.translate(0, 0.5, 0);
+  const foliage1Geo = foliage1.toNonIndexed();
+  foliage1.dispose();
+
+  const foliage2 = new THREE.DodecahedronGeometry(0.45, 1);
+  foliage2.translate(0.3, 0.4, 0.2);
+  const foliage2Geo = foliage2.toNonIndexed();
+  foliage2.dispose();
+
+  const foliage3 = new THREE.DodecahedronGeometry(0.45, 1);
+  foliage3.translate(-0.3, 0.45, -0.2);
+  const foliage3Geo = foliage3.toNonIndexed();
+  foliage3.dispose();
+
+  const geos = [baseGeo, foliage1Geo, foliage2Geo, foliage3Geo];
+  let totalVerts = 0;
+  geos.forEach((g) => {
+    totalVerts += g.attributes.position.count;
+  });
+
+  const mergedPositions = new Float32Array(totalVerts * 3);
+  const mergedNormals = new Float32Array(totalVerts * 3);
+  const mergedColors = new Float32Array(totalVerts * 3);
+
+  const stemColor = { r: 0.35, g: 0.22, b: 0.1 };
+  const leafColor = { r: 0.22, g: 0.55, b: 0.16 }; // vibrant green
+
+  let offset = 0;
+  geos.forEach((g, idx) => {
+    const pos = g.attributes.position.array as Float32Array;
+    const norm = g.attributes.normal.array as Float32Array;
+    const count = g.attributes.position.count;
+    const isStem = idx === 0;
+    const color = isStem ? stemColor : leafColor;
+
+    mergedPositions.set(pos, offset * 3);
+    mergedNormals.set(norm, offset * 3);
+
+    for (let i = 0; i < count; i++) {
+      let r = color.r;
+      let gVal = color.g;
+      let b = color.b;
+      if (!isStem) {
+        // Add subtle variation to leaves
+        const noise = (Math.sin(pos[i * 3] * 8) + Math.cos(pos[i * 3 + 2] * 8)) * 0.04;
+        r += noise;
+        gVal += noise * 0.5;
+        b += noise;
+      }
+      mergedColors[(offset + i) * 3] = Math.max(0, Math.min(1, r));
+      mergedColors[(offset + i) * 3 + 1] = Math.max(0, Math.min(1, gVal));
+      mergedColors[(offset + i) * 3 + 2] = Math.max(0, Math.min(1, b));
+    }
+
+    offset += count;
+    g.dispose();
+  });
+
+  const mergedGeo = new THREE.BufferGeometry();
+  mergedGeo.setAttribute('position', new THREE.BufferAttribute(mergedPositions, 3));
+  mergedGeo.setAttribute('normal', new THREE.BufferAttribute(mergedNormals, 3));
+  mergedGeo.setAttribute('color', new THREE.BufferAttribute(mergedColors, 3));
+  mergedGeo.name = 'shrub';
+
+  return mergedGeo;
+}
+
 export default TerrainChunk;

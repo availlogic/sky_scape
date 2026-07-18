@@ -2,9 +2,14 @@ import type { IBiomeConfig } from '../types';
 
 export const FOREST_BIOME: IBiomeConfig = {
   name: 'forest',
-  primaryColor: '#1B3F14', // Deep pine forest green
-  secondaryColor: '#5C4033', // Dark earth brown (cliffs)
+  primaryColor: '#388E3C', // Vibrant grass green
+  secondaryColor: '#795548', // Warm clay/earth brown (cliffs)
   waterColor: '#1A5276', // Deep lake blue
+  skyColor: '#bae6fd', // Warm sunny sky blue
+  ambientColor: '#bae6fd', // Matching ambient light fill
+  ambientIntensity: 0.6,
+  sunColor: '#fffbeb', // Warm golden sunlight
+  sunIntensity: 1.2,
   noise: {
     frequency: 0.008,
     octaves: 6,
@@ -16,7 +21,8 @@ export const FOREST_BIOME: IBiomeConfig = {
   foliage: [
     { type: 'tree', density: 1.8, scaleMin: 0.8, scaleMax: 2.2 },
     { type: 'rock', density: 0.05, scaleMin: 0.125, scaleMax: 0.375 },
-    { type: 'grass', density: 0.8, scaleMin: 0.3, scaleMax: 0.6 },
+    { type: 'grass', density: 2.5, scaleMin: 0.4, scaleMax: 0.8 },
+    { type: 'shrub', density: 1.8, scaleMin: 0.6, scaleMax: 1.2 },
   ],
 };
 export default FOREST_BIOME;

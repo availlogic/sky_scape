@@ -36,6 +36,7 @@ export function bootstrap(): void {
   const renderEngine = new RenderEngine(canvas);
   console.log('RenderEngine initialized');
   const sceneManager = new SceneManager(canvas);
+  sceneManager.applyBiomeEnvironment(activeBiome);
   console.log('SceneManager initialized');
 
   // CPU terrain height function matching GPU heightmap
@@ -347,6 +348,7 @@ export function bootstrap(): void {
 
       const defaultBiome = biomeManager.setActiveBiome(defaults.biomeName);
       terrainManager.setBiome(defaultBiome);
+      sceneManager.applyBiomeEnvironment(defaultBiome);
       if (biomeBadgeName) {
         biomeBadgeName.textContent =
           defaultBiome.name.charAt(0).toUpperCase() + defaultBiome.name.slice(1);
@@ -396,6 +398,7 @@ export function bootstrap(): void {
         card.classList.add('active');
         const newBiome = biomeManager.setActiveBiome(biomeName);
         terrainManager.setBiome(newBiome);
+        sceneManager.applyBiomeEnvironment(newBiome);
         if (biomeBadgeName) {
           biomeBadgeName.textContent =
             newBiome.name.charAt(0).toUpperCase() + newBiome.name.slice(1);
